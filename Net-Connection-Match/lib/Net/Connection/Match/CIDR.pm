@@ -39,7 +39,7 @@ sub new{
 	if ( ! defined( $args{cidrs} ) ){
 		die ('No cidrs key specified in the argument hash');
 	}
-	if ( ref( $args{cidrs} ) eq 'ARRAY' ){
+	if ( ref( \$args{cidrs} ) eq 'ARRAY' ){
 		die ('The cidrs key is not a array');
 	}
 	if ( ! defined $args{cidrs}[0] ){
@@ -84,7 +84,13 @@ sub match{
 	my $self=$_[0];
 	my $object=$_[1];
 
-	
+	if ( !defined( $object ) ){
+		return 0;
+	}
+
+	if ( ref( $object ) ne 'Net::Connection' ){
+		return 0;
+	}
 	
 }
 

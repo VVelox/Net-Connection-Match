@@ -3,50 +3,146 @@ package Net::Connection::Match;
 use 5.006;
 use strict;
 use warnings;
+use Net::Connection;
+use base 'Error::Helper';
 
 =head1 NAME
 
-Net::Connection::Match - The great new Net::Connection::Match!
+Net::Connection::Match - Runs a stack of checks to match Net::Connection objects.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.0.0
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.0.0';
 
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
     use Net::Connection::Match;
 
-    my $foo = Net::Connection::Match->new();
-    ...
 
-=head1 EXPORT
+=head1 METHODS
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
-=head1 SUBROUTINES/METHODS
-
-=head2 function1
+=head2 new
 
 =cut
 
-sub function1 {
+sub new{
+	my %args;
+	if(defined($_[1])){
+		%args= %{$_[1]};
+	};
+
+	# Provides some basic checks.
+	# Could make these all one if, but this provides more
+	# granularity for some one using it.
+	if ( ! defined( $args{checks} )	){
+		die ('No check key specified in the argument hash');
+	}
+	if ( ref( $args{checks} ) eq 'ARRAY' ){
+		die ('The checks key is not a array');
+	}
+	# Will never match anything.
+	if ( ! defined $args{checks}[0] ){
+		die ('Nothing in the checks array');
+	}
+	if ( ref( $args{checks}[0] ) eq 'HASH' ){
+		die ('The first item in the checks array is not a hash');
+	}
+
+    my $self = {
+				perror=>undef,
+				error=>undef,
+				errorString=>"",
+				errorExtra=>{
+							 flags=>{
+									 1=>'failedCheckInit',
+									 }
+							 },
+				checks=>[],
+				};
+    bless $self;
+
+	# will hold the created check objects
+	my @checks;
+
+	# Loads up each check or dies if it fails to.
+	my $check_int=0;
+	while( defined( $args{checks}[$check_int] ) ){
+		my %new_check=(
+					   type=>undef,
+					   args=>undef,
+					   invert=>undef,
+					   );
+
+		# make sure we have a check type
+		if ( defined($args{checks}[$check_int]{'type'}) ){
+		   $new_check{type}=$args{checks}[$check_int]{'type'};
+		}else{
+			die('No type defined for check '.$check_int);
+		}
+
+		# does a quick check on the tpye name
+		my $type_test=$new_check{type};
+		$type_test=~s/[A-Za-z0-9]//g;
+		$type_test=~s/\:\://g;
+		if ( $type_test !~ /^$/ ){
+			die 'The type "'.$new_check{type}.'" for check '.$check_int.' is not a valid check name';
+		}
+
+		# makes sure we have a args object and that it is a hash
+		if (
+			( defined($args{checks}[$check_int]{'args'}) ) &&
+			( ref( $args{checks}[$check_int]{'args'} ) eq 'HASH' )
+			){
+		   $new_check{args}=$args{checks}[$check_int]{'args'};
+		}else{
+			die('No type defined for check '.$check_int.' or it is not a HASH');
+		}
+
+		# makes sure we have a args object and that it is a hash
+		if (
+			( defined($args{checks}[$check_int]{'invert'}) ) &&
+			( ref( \$args{checks}[$check_int]{'invert'} ) ne 'SCALAR' )
+			){
+			die('Invert defined for check '.$check_int.' but it is not a SCALAR');
+		}elsif(
+			( defined($args{checks}[$check_int]{'invert'}) ) &&
+			( ref( \$args{checks}[$check_int]{'invert'} ) eq 'SCALAR' )
+			   ){
+			$new_check{invert}=$args{checks}[$check_int]{'invert'};
+		}
+
+		my $check;
+		my $eval_string='use Net::Connection::Match::'.$new_check{type}.';'.
+		'$check=Net::Connection::Match::'.$new_check{type}.'->new( $new_check{args} );';
+		eval( $eval_string );
+
+		if (!defined( $check )){
+			die('Failed to init the check for '.$check_int.' as it returned undef... '.$@);
+		}
+
+		$new_check{check}=$check;
+
+		push(@{ $self->{checks} }, \%new_check );
+
+		$check_int++;
+	}
+
+	return $self;
 }
 
-=head2 function2
+=head2 matches
+
+Checks if a single Net::Connection object matches the stack.
 
 =cut
 
-sub function2 {
+sub matches{
+
 }
 
 =head1 AUTHOR

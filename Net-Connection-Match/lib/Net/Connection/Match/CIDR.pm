@@ -1,13 +1,13 @@
-package Net::Connection::Match;
+package Net::Connection::Match::CIDR;
 
 use 5.006;
 use strict;
 use warnings;
-use base 'Error::Helper';
+use Net::CIDR;
 
 =head1 NAME
 
-Net::Connection::Match - Runs a stack of checks to match Net::Connection objects.
+Net::Connection::Match::CIDR - Runs a basic CIDR check against a Net::Connection object.
 
 =head1 VERSION
 
@@ -20,7 +20,7 @@ our $VERSION = '0.0.0';
 
 =head1 SYNOPSIS
 
-    use Net::Connection::Match;
+    use Net::Connection::Match::CIDR;
 
 
 =head1 METHODS
@@ -35,113 +35,57 @@ sub new{
 		%args= %{$_[1]};
 	};
 
-	# Provides some basic checks.
-	# Could make these all one if, but this provides more
-	# granularity for some one using it.
-	if ( ! defined( $args{checks} )	){
-		die ('No check key specified in the argument hash');
+	# run some basic checks to make sure we have the minimum stuff required to work
+	if ( ! defined( $args{cidrs} ) ){
+		die ('No cidrs key specified in the argument hash');
 	}
-	if ( ref( $args{checks} ) eq 'ARRAY' ){
-		die ('The checks key is not a array');
+	if ( ref( $args{cidrs} ) eq 'ARRAY' ){
+		die ('The cidrs key is not a array');
 	}
-	# Will never match anything.
-	if ( ! defined $args{checks}[0] ){
-		die ('Nothing in the checks array');
-	}
-	if ( ref( $args{checks}[0] ) eq 'HASH' ){
-		die ('The first item in the checks array is not a hash');
+	if ( ! defined $args{cidrs}[0] ){
+		die ('No CIDRs defined in the cidrs array');
 	}
 
     my $self = {
-				perror=>undef,
-				error=>undef,
-				errorString=>"",
-				errorExtra=>{
-							 flags=>{
-									 1=>'failedCheckInit',
-									 }
-							 },
-				checks=>[],
+				cidrs=>[],
 				};
     bless $self;
 
-	# will hold the created check objects
-	my @checks;
+	# make sure each cidr is valid before returning it
+	my $cidrs_int=0;
+	while( defined( $args{cidrs}[$cidrs_int] ) ){
+		my $cidr_good=0;
+		eval{
+			if ( Net::CIDR::cidrvalidate( $args{cidrs}[$cidrs_int] ) ){
+				$cidr_good=1;
+			}
+		};
 
-	# Loads up each check or dies if it fails to.
-	my $check_int=0;
-	while( defined( $args{checks}[$check_int] ) ){
-		my %new_check=(
-					   type=>undef,
-					   args=>undef,
-					   invert=>undef,
-					   );
-
-		# make sure we have a check type
-		if ( defined($args{checks}[$check_int]{'type'}) ){
-		   $new_check{type}=$args{checks}[$check_int]{'type'};
+		# if good add it, otherwise die
+		if ( $cidr_good ){
+			$self->{cidrs}[$cidrs_int]=$args{cidrs}[$cidrs_int];
 		}else{
-			die('No type defined for check '.$check_int);
+			die('"'.$args{cidrs}[$cidrs_int].'" is not a CIDR according to Net::CIDR::cidrvalidate');
 		}
 
-		# does a quick check on the tpye name
-		my $type_test=$new_check{type};
-		$type_test=~s/[A-Za-z0-9]//g;
-		$type_test=~s/\:\://g;
-		if ( $type_test !~ /^$/ ){
-			die 'The type "'.$new_check{type}.'" for check '.$check_int.' is not a valid check name';
-		}
-
-		# makes sure we have a args object and that it is a hash
-		if (
-			( defined($args{checks}[$check_int]{'args'}) ) &&
-			( ref( $args{checks}[$check_int]{'args'} ) eq 'HASH' )
-			){
-		   $new_check{args}=$args{checks}[$check_int]{'args'};
-		}else{
-			die('No type defined for check '.$check_int.' or it is not a HASH');
-		}
-
-		# makes sure we have a args object and that it is a hash
-		if (
-			( defined($args{checks}[$check_int]{'invert'}) ) &&
-			( ref( \$args{checks}[$check_int]{'invert'} ) ne 'SCALAR' )
-			){
-			die('Invert defined for check '.$check_int.' but it is not a SCALAR');
-		}elsif(
-			( defined($args{checks}[$check_int]{'invert'}) ) &&
-			( ref( \$args{checks}[$check_int]{'invert'} ) eq 'SCALAR' )
-			   ){
-			$new_check{invert}=$args{checks}[$check_int]{'invert'};
-		}
-
-		my $check;
-		my $eval_string='use Net::Connection::Match::'.$new_check{type}.';'.
-		'$check=Net::Connection::Match::'.$new_check{type}.'->new( $new_check{args} );';
-		eval( $eval_string );
-
-		if (!defined( $check )){
-			die('Failed to init the check for '.$check_int.' as it returned undef... '.$@);
-		}
-
-		$new_check{check}=$check;
-
-		push(@{ $self->{checks} }, \%new_check );
-
-		$check_int++;
+		$cidrs_int++;
 	}
 
 	return $self;
 }
 
-=head2 matches
+=head2 match
 
 Checks if a single Net::Connection object matches the stack.
 
 =cut
 
-sub matches{
+sub match{
+	my $self=$_[0];
+	my $object=$_[1];
 
+	
+	
 }
 
 =head1 AUTHOR

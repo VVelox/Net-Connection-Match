@@ -91,7 +91,26 @@ sub match{
 	if ( ref( $object ) ne 'Net::Connection' ){
 		return 0;
 	}
-	
+
+	my $cidrs_int=0;
+	while( defined( $self->{cidrs}[$cidrs_int] ) ){
+		if (
+			(
+			 ( $object->foreign_host ne '*' ) &&
+			 ( eval{ Net::CIDR::cidrlookup( $object->foreign_host, $self->{cidrs}[$cidrs_int] ) })
+			 ) ||
+			(
+			 ( $object->local_host ne '*' ) &&
+			 ( eval{ Net::CIDR::cidrlookup( $object->local_host, $self->{cidrs}[$cidrs_int] ) })
+			 )
+			){
+			return 1;
+		}
+
+		$cidrs_int++;
+	}
+
+	return 0;
 }
 
 =head1 AUTHOR

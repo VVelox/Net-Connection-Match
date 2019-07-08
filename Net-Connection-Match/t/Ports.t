@@ -61,7 +61,7 @@ eval{
 };
 ok( $returned eq '0', 'match improper ref check') or diag('match accepted a ref other than Net::Connection');
 
-# Create a connection with a matching protocol and see if it matches
+# Create a connection with a matching general port and see if it matches
 my $conn=Net::Connection->new( $connection_args );
 $returned=0;
 eval{
@@ -69,7 +69,7 @@ eval{
 };
 ok( $returned eq '1', 'port match check') or diag('General port match failed');
 
-# Create a connection with a non-matching protocol and make sure it does not match
+# Create a connection with a matching local port and see if it matches
 $connection_args->{local_port}='53';
 $conn=Net::Connection->new( $connection_args );
 $returned=1;
@@ -78,4 +78,14 @@ eval{
 };
 ok( $returned eq '1', 'local port match check') or diag('Failed to matching local port');
 
-done_testing(7);
+# Create a connection with a matching local port and see if it matches
+$connection_args->{local_port}='80';
+$connection_args->{foreign_port}='12345';
+$conn=Net::Connection->new( $connection_args );
+$returned=1;
+eval{
+	$returned=$checker->match( $conn );
+};
+ok( $returned eq '1', 'foreign port match check') or diag('Failed to matching foreign port');
+
+done_testing(8);

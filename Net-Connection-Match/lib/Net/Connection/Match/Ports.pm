@@ -213,6 +213,32 @@ sub match{
 		return 0;
 	}
 
+	my $lport=$object->local_port;
+	my $fport=$object->foreign_port;
+
+	# If either are non-numeric, resolve them if possible
+	if ( $lport !~ /^[0-9]+$/ ){
+		my $lport_number=(getservbyname( $lport , '' ))[2];
+		if ( defined( $lport_number ) ){
+			$lport=$lport_number;
+		}
+	}
+	if ( $fport !~ /^[0-9]+$/ ){
+		my $fport_number=(getservbyname( $fport , '' ))[2];
+		if ( defined( $fport_number ) ){
+			$fport=$fport_number;
+		}
+	}
+
+	# check if this is one of the ones we are looking for
+	if (
+		defined( $self->{ports}{ $lport } ) ||
+		defined( $self->{ports}{ $fport } ) ||
+		defined( $self->{lports}{ $lport } ) ||
+		defined( $self->{fports}{ $fport } )
+		){
+		return 1;
+	}
 
 	return 0;
 }

@@ -1,4 +1,4 @@
-package Net::Connection::Match::States;
+package Net::Connection::Match::Protos;
 
 use 5.006;
 use strict;
@@ -6,7 +6,7 @@ use warnings;
 
 =head1 NAME
 
-Net::Connection::Match::States - Runs a basic state check against a Net::Connection object.
+Net::Connection::Match::Protos - Runs a basic state check against a Net::Connection object.
 
 =head1 VERSION
 
@@ -19,7 +19,7 @@ our $VERSION = '0.0.0';
 
 =head1 SYNOPSIS
 
-    use Net::Connection::Match::States;
+    use Net::Connection::Match::Protos;
     use Net::Connection;
     
     my $connection_args={
@@ -34,13 +34,13 @@ our $VERSION = '0.0.0';
     my $conn=Net::Connection->new( $connection_args );
     
     my %args=(
-              states=>[
-                      'ESTABLISHED',
-                      'LISTEN',
+              protos=>[
+                      'tcp4',
+                      'tcp6',
                       ],
               );
     
-    my $checker=Net::Connection::Match::States->new( \%args );
+    my $checker=Net::Connection::Match::Protos->new( \%args );
     
     if ( $checker->match( $conn ) ){
         print "It matches.\n";
@@ -53,19 +53,19 @@ our $VERSION = '0.0.0';
 This intiates the object.
 
 It takes a hash reference with one key. One key is required and
-that is 'states', which is a array of states to match against.
+that is 'protos', which is a array of protocols to match against.
 
 Atleast one state must be present.
 
 If the new method fails, it dies.
 
     my %args=(
-              states=>[
-                      'ESTABLISHED',
+              protos=>[
+                      'tcp4',
                       ],
               );
     
-    my $checker=Net::Connection::Match::State->new( \%args );
+    my $checker=Net::Connection::Match::Protos->new( \%args );
 
 =cut
 
@@ -79,24 +79,24 @@ sub new{
 	if ( ! defined( $args{states} ) ){
 		die ('No states key specified in the argument hash');
 	}
-	if ( ref( \$args{states} ) eq 'ARRAY' ){
+	if ( ref( \$args{protos} ) eq 'ARRAY' ){
 		die ('The states key is not a array');
 	}
-	if ( ! defined $args{states}[0] ){
-		die ('No states defined in the states array');
+	if ( ! defined $args{protos}[0] ){
+		die ('No states defined in the protos array');
 	}
 
     my $self = {
-				states=>[],
+				protos=>[],
 				};
     bless $self;
 
 	# make sure each cidr is valid before returning it
-	my $states_int=0;
-	while( defined( $args{states}[$states_int] ) ){
-		$self->{states}[$states_int]=lc( $args{states}[$states_int] );
+	my $protos_int=0;
+	while( defined( $args{protos}[$protos_int] ) ){
+		$self->{protos}[$protos_int]=lc( $args{protos}[$protos_int] );
 
-		$states_int++;
+		$protos_int++;
 	}
 
 	return $self;
@@ -128,13 +128,13 @@ sub match{
 		return 0;
 	}
 
-	my $states_int=0;
-	while( defined( $self->{states}[$states_int] ) ){
-		if ( $self->{states}[$states_int] eq lc( $object->state ) ){
+	my $protos_int=0;
+	while( defined( $self->{protos}[$protos_int] ) ){
+		if ( $self->{protos}[$protos_int] eq lc( $object->proto ) ){
 			return 1;
 		}
 
-		$states_int++;
+		$protos_int++;
 	}
 
 	return 0;

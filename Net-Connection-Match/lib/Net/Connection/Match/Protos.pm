@@ -76,7 +76,7 @@ sub new{
 	};
 
 	# run some basic checks to make sure we have the minimum stuff required to work
-	if ( ! defined( $args{states} ) ){
+	if ( ! defined( $args{protos} ) ){
 		die ('No states key specified in the argument hash');
 	}
 	if ( ref( \$args{protos} ) eq 'ARRAY' ){

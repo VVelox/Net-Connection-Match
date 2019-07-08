@@ -46,7 +46,7 @@ my $returned=1;
 eval{
 	$returned=$checker->match;
 };
-ok( $returned eq '0', 'match undef check') or diag('match accepted undefined input');
+ok( $returned eq '0', 'proto undef check') or diag('match accepted undefined input');
 
 # make sure it will not accept a improper ref type
 $returned=1;
@@ -55,21 +55,21 @@ eval{
 };
 ok( $returned eq '0', 'match improper ref check') or diag('match accepted a ref other than Net::Connection');
 
-# Create a connection with a matching state and see if it matches
+# Create a connection with a matching protocol and see if it matches
 my $conn=Net::Connection->new( $connection_args );
 $returned=0;
 eval{
 	$returned=$checker->match( $conn );
 };
-ok( $returned eq '1', 'state match check') or diag('Failed to match a matching good state');
+ok( $returned eq '1', 'proto match check') or diag('Failed to match a matching good protocol');
 
-# Create a connection with a non-matching state and make sure it does not match
+# Create a connection with a non-matching protocol and make sure it does not match
 $connection_args->{proto}='udp4';
 $conn=Net::Connection->new( $connection_args );
 $returned=1;
 eval{
 	$returned=$checker->match( $conn );
 };
-ok( $returned eq '0', 'state non-match check') or diag('Matched a state that it should not of');
+ok( $returned eq '0', 'proto non-match check') or diag('Matched a protocol that it should not of');
 
 done_testing(7);

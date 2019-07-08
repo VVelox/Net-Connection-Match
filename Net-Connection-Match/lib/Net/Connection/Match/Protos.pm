@@ -55,7 +55,7 @@ This intiates the object.
 It takes a hash reference with one key. One key is required and
 that is 'protos', which is a array of protocols to match against.
 
-Atleast one state must be present.
+Atleast one protocol must be present.
 
 If the new method fails, it dies.
 
@@ -77,10 +77,10 @@ sub new{
 
 	# run some basic checks to make sure we have the minimum stuff required to work
 	if ( ! defined( $args{protos} ) ){
-		die ('No states key specified in the argument hash');
+		die ('No protos key specified in the argument hash');
 	}
 	if ( ref( \$args{protos} ) eq 'ARRAY' ){
-		die ('The states key is not a array');
+		die ('The protos key is not a array');
 	}
 	if ( ! defined $args{protos}[0] ){
 		die ('No states defined in the protos array');

@@ -128,6 +128,15 @@ sub match{
 		return 0;
 	}
 
+	my $states_int=0;
+	while( defined( $self->{states}[$states_int] ) ){
+		if ( $self->{states}[$states_int] eq lc( $object->state ) ){
+			return 1;
+		}
+
+		$states_int++;
+	}
+
 	return 0;
 }
 

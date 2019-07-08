@@ -21,11 +21,57 @@ our $VERSION = '0.0.0';
 =head1 SYNOPSIS
 
     use Net::Connection::Match::CIDR;
+    use Net::Connection;
+    
+    my $connection_args={
+                         foreign_host=>'10.0.0.1',
+                         foreign_port=>'22',
+                         local_host=>'10.0.0.2',
+                         local_port=>'12322',
+                         proto=>'tcp4',
+                         state=>'ESTABLISHED',
+                        };
+    
+    my $conn=Net::Connection->new( $connection_args );
+    
+    my %args=(
+              cidrs=>[
+                      '127.0.0.0/24',
+                      '192.168.0.0/16',
+                      '10.0.0.0/8'
+                      ],
+              );
 
+    my $cidr_checker=Net::Connection::Match::CIDR->new( \%args );
+
+    if ( $cidr_checker->match( $conn ) ){
+        print "It matches.\n";
+    }
 
 =head1 METHODS
 
 =head2 new
+
+This intiates the object.
+
+It takes a hash reference with one key. One key is required and
+that is 'cidrs', which is a array of CIDRs to match against.
+
+Net::CIDR::cidrvalidate is used to validate the CIDRs.
+
+Atleast one CIDR must be present.
+
+If the new method fails, it dies.
+
+    my %args=(
+              cidrs=>[
+                      '127.0.0.0/24',
+                      '192.168.0.0/16',
+                      '10.0.0.0/8'
+                      ],
+              );
+
+    my $cidr_checker=Net::Connection::Match::CIDR->new( \%args );
 
 =cut
 
@@ -77,6 +123,14 @@ sub new{
 =head2 match
 
 Checks if a single Net::Connection object matches the stack.
+
+One argument is taken and that is a Net::Connection object.
+
+The returned value is a boolean.
+
+    if ( $cidr_checker->match( $conn ) ){
+        print "The connection matches.\n";
+    }
 
 =cut
 

@@ -145,7 +145,7 @@ sub new{
 	my $ptrs_int=0;
 	if ( defined( $args{ptrs} ) ){
 		while (defined( $args{ptrs}[$ptrs_int] )) {
-			$self->{ptrs}{ $ptrs_int }=lc( $args{ptrs}[$ptrs_int] );
+			$self->{ptrs}{ $args{ptrs}[$ptrs_int] }=lc( $args{ptrs}[$ptrs_int] );
 
 			$ptrs_int++;
 		}
@@ -155,7 +155,7 @@ sub new{
 	$ptrs_int=0;
 	if ( defined( $args{lptrs} ) ){
 		while (defined( $args{lptrs}[$ptrs_int] )) {
-			$self->{lptrs}{ $ptrs_int }=lc( $args{lptrs}[$ptrs_int] );
+			$self->{lptrs}{ $args{lptrs}[$ptrs_int] }=lc( $args{lptrs}[$ptrs_int] );
 
 			$ptrs_int++;
 		}
@@ -165,7 +165,7 @@ sub new{
 	$ptrs_int=0;
 	if ( defined( $args{fptrs} ) ){
 		while (defined( $args{fptrs}[$ptrs_int] )) {
-			$self->{fptrs}{ $ptrs_int }=lc( $args{fptrs}[$ptrs_int] );
+			$self->{fptrs}{ $args{fptrs}[$ptrs_int] }=lc( $args{fptrs}[$ptrs_int] );
 
 			$ptrs_int++;
 		}

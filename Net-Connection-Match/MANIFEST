@@ -15,6 +15,9 @@ t/03-load.t
 t/04-load.t
 t/05-load.t
 t/CIDR.t
+t/PTR.t
+t/Protos.t
+t/Ports.t
 t/States.t
 t/manifest.t
 t/pod-coverage.t

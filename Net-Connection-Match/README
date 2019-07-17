@@ -1,16 +1,66 @@
 Net-Connection-Match
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+Provides a easy to use method for checking if a Net::Connection
+object mathes a series of checks.
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+Currently can do matching based off of the following.
 
+ * CIDR
+ * Ports
+ * Protocol
+ * State
+ * PTR
+
+    use Net::Connection::Match;
+    use Net::Connection;
+    
+    my $connection_args={
+                         foreign_host=>'10.0.0.1',
+                         foreign_port=>'22',
+                         local_host=>'10.0.0.2',
+                         local_port=>'12322',
+                         proto=>'tcp4',
+                         state=>'LISTEN',
+                        };
+    my $conn=Net::Connection->new( $connection_args );
+    
+    my %args=(
+              checks=>[
+                       {
+                        type=>'Ports',
+                        invert=>0,
+                        args=>{
+                               ports=>[
+                                       '22',
+                                      ],
+                               lports=>[
+                                        '53',
+                                       ],
+                               fports=>[
+                                        '12345',
+                                       ],
+                        }
+                       },
+                       {
+                        type=>'Protos',
+                        invert=>0,
+                        args=>{
+                               protos=>[
+                                        'tcp4',
+                                       ],
+                        }
+                       }
+                      ]
+             );
+    
+    my $checker;
+    eval{
+        $checker=Net::Connection::Match->new( \%args );
+    } or die "New failed with...".$@;
+    
+    if ( $check->match( $conn ) ){
+        print "It matched!\n";
+    }
 
 INSTALLATION
 
@@ -41,6 +91,9 @@ You can also look for information at:
 
     Search CPAN
         https://metacpan.org/release/Net-Connection-Match
+
+    Git Repo
+        https://gitea.eesdp.org/vvelox/Net-Connection-Match
 
 
 LICENSE AND COPYRIGHT

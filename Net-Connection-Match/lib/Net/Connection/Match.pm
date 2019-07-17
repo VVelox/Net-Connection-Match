@@ -65,7 +65,7 @@ our $VERSION = '0.0.0';
     my $checker;
     eval{
         $checker=Net::Connection::Match->new( \%args );
-    };
+    } or die "New failed with...".$@;
     
     if ( $check->match( $conn ) ){
         print "It matched!\n";
@@ -334,6 +334,10 @@ L<https://cpanratings.perl.org/d/Net-Connection-Match>
 =item * Search CPAN
 
 L<https://metacpan.org/release/Net-Connection-Match>
+
+=item * Git Repo
+
+L<https://gitea.eesdp.org/vvelox/Net-Connection-Match>
 
 =back
 

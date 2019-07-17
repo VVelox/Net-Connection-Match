@@ -18,6 +18,15 @@ my $connection_args={
 					  state=>'LISTEN',
 					  };
 
+my $nm_connection_args={
+					  foreign_host=>'10.0.0.1',
+					  foreign_port=>'80',
+					  local_host=>'10.0.0.2',
+					  local_port=>'12322',
+					  proto=>'tcp4',
+					  state=>'LISTEN',
+					  };
+
 my %args=(
 		  testing=>1,
 		  checks=>[
@@ -38,6 +47,38 @@ my %args=(
 					}
 				   ]
 		  );
+
+my %args2=(
+		  testing=>1,
+		  checks=>[
+				   {
+					type=>'Ports',
+					invert=>0,
+					args=>{
+						   ports=>[
+								   '22',
+								   ],
+						   lports=>[
+									'53',
+									],
+						   fports=>[
+									'12345',
+									],
+						   }
+					},
+				   {
+					type=>'Protos',
+					invert=>0,
+					args=>{
+						   protos=>[
+									'tcp4',
+									],
+						   }
+					}
+				   ]
+		   );
+
+
 my $checker;
 
 # makes sure we error with empty args
@@ -69,7 +110,7 @@ eval{
 };
 ok( $checker->error eq '2', 'match null input check') or diag('match accepted null input');
 
-# Create a connection with a matching general port and see if it matches
+# Create a matching connection and see if it matches
 my $conn=Net::Connection->new( $connection_args );
 $returned=0;
 eval{
@@ -77,4 +118,27 @@ eval{
 };
 ok( $returned eq '1', 'match good conn check') or diag('match failed on a connection that should match');
 
-done_testing(6);
+# Create a non-matching connection and see if it matches
+my $nm_conn=Net::Connection->new( $nm_connection_args );
+$returned=0;
+eval{
+	$returned=$checker->match($nm_conn);
+};
+ok( $returned eq '0', 'match bad conn check') or diag('match on a connection that should not match');
+
+# makes sure we can init with good args
+$worked=0;
+eval{
+	$checker=Net::Connection::Match->new( \%args2 );
+	$worked=1;
+};
+ok( $worked eq '1', 'init check2') or diag('Calling Net::Connection::Match::Ports->new resulted in... '.$@);
+
+# Create a matching connection and see if it matches
+$returned=0;
+eval{
+	$returned=$checker->match($conn);
+};
+ok( $returned eq '1', 'match good conn check2') or diag('match failed on a connection that should match');
+
+done_testing(9);

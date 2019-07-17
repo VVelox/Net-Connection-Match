@@ -22,6 +22,54 @@ our $VERSION = '0.0.0';
 
     use Net::Connection::Match;
     use Net::Connection;
+    
+    my $connection_args={
+                         foreign_host=>'10.0.0.1',
+                         foreign_port=>'22',
+                         local_host=>'10.0.0.2',
+                         local_port=>'12322',
+                         proto=>'tcp4',
+                         state=>'LISTEN',
+                        };
+    my $conn=Net::Connection->new( $connection_args );
+    
+    my %args=(
+              checks=>[
+                       {
+                        type=>'Ports',
+                        invert=>0,
+                        args=>{
+                               ports=>[
+                                       '22',
+                                      ],
+                               lports=>[
+                                        '53',
+                                       ],
+                               fports=>[
+                                        '12345',
+                                       ],
+                        }
+                       },
+                       {
+                        type=>'Protos',
+                        invert=>0,
+                        args=>{
+                               protos=>[
+                                        'tcp4',
+                                       ],
+                        }
+                       }
+                      ]
+             );
+    
+    my $checker;
+    eval{
+        $checker=Net::Connection::Match->new( \%args );
+    };
+    
+    if ( $check->match( $conn ) ){
+        print "It matched!\n";
+    }
 
 =head1 METHODS
 
@@ -31,6 +79,8 @@ This initializes a new check object.
 
 It takes one value and thht is a hash ref with the key checks.
 This is a array of hashes.
+
+If new fails, it will die.
 
 =head3 checks hash keys
 
@@ -171,6 +221,14 @@ sub new{
 
 Checks if a single Net::Connection object matches the stack.
 
+One object is argument is taken and that is the Net::Connection to check.
+
+The return value is a boolean.
+
+    if ( $ncm->match( $conn ) ){
+        print "It matched.\n";
+    }
+
 =cut
 
 sub match{
@@ -231,10 +289,6 @@ sub match{
 =head1 ERROR HANDLING / FLAGS
 
 Error handling is provided by L<Error::Helper>.
-
-=head2 1 / failedCheckInit
-
-Calling new for one or more of the checks failed.
 
 =head2 2 / notNCobj
 

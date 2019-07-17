@@ -21,7 +21,7 @@ our $VERSION = '0.0.0';
 =head1 SYNOPSIS
 
     use Net::Connection::Match;
-
+    use Net::Connection;
 
 =head1 METHODS
 
@@ -59,6 +59,7 @@ sub new{
 				errorExtra=>{
 							 flags=>{
 									 1=>'failedCheckInit',
+									 2=>'notNCobj',
 									 }
 							 },
 				checks=>[],
@@ -121,7 +122,11 @@ sub new{
 		eval( $eval_string );
 
 		if (!defined( $check )){
-			die('Failed to init the check for '.$check_int.' as it returned undef... '.$@);
+			$self->{error}=1;
+			$self->{errorString}='Failed to init the check for '.$check_int.' as it returned undef... '.$@;
+			$self->warn;
+			$self->{perror}=1;
+			return $self;
 		}
 
 		$new_check{check}=$check;
@@ -141,7 +146,56 @@ Checks if a single Net::Connection object matches the stack.
 =cut
 
 sub matches{
+	my $self=$_[0];
+	my $conn=$_[1];
 
+	if( ! $self->errorblank ){
+		return undef;
+	}
+
+	if (
+		( ! defined( $conn ) ) ||
+		( ref( $conn ) ne 'Net::Connection' )
+		){
+		$self->{error}=2;
+		$self->{errorString}='Either the connection is undefined or is not a Net::Connection object';
+		$self->warn;
+		return undef;
+	}
+
+	# Stores the number of hits
+	my $hits;
+	my $required=0;
+	foreach my $check ( @{ $self->{checks} } ){
+		my $hit;
+		eval{
+			$hit=$check->{check}->($conn);
+		};
+
+		# If $hits is undef, then one of the checks errored and we skip processing the results.
+		# Should only be 0 or 1.
+		if ( defined( $hit ) ){
+			# invert if needed
+			if ( $check->{invert} ){
+				$hit = $hit ^ 1;
+			}
+
+			# increment the hits count if we hit
+			if ( $hit ){
+				$hits++;
+			}
+		}
+
+		$required++;
+	}
+
+	# if these are the same, then we have a match
+	if ( $required == $hits ){
+		return 1;
+	}
+
+	# If we get here, it is not a match
+	return 0;
 }
 
 =head1 AUTHOR

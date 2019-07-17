@@ -194,12 +194,12 @@ sub match{
 	}
 
 	# Stores the number of hits
-	my $hits;
+	my $hits=0;
 	my $required=0;
 	foreach my $check ( @{ $self->{checks} } ){
 		my $hit;
 		eval{
-			$hit=$check->{check}->($conn);
+			$hit=$check->{check}->match($conn);
 		};
 
 		# If $hits is undef, then one of the checks errored and we skip processing the results.
@@ -220,7 +220,7 @@ sub match{
 	}
 
 	# if these are the same, then we have a match
-	if ( $required == $hits ){
+	if ( $required eq $hits ){
 		return 1;
 	}
 

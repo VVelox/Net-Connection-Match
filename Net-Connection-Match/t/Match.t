@@ -63,11 +63,18 @@ eval{
 };
 ok( $checker->error eq '2', 'match improper ref check') or diag('match accepted a ref other than Net::Connection');
 
-
 # make sure it will not accept null input
 eval{
 	$returned=$checker->match();
 };
-ok( $checker->error eq '2', 'match null input check') or diag('match accepted a ref other than Net::Connection');
+ok( $checker->error eq '2', 'match null input check') or diag('match accepted null input');
 
-done_testing(5);
+# Create a connection with a matching general port and see if it matches
+my $conn=Net::Connection->new( $connection_args );
+$returned=0;
+eval{
+	$returned=$checker->match($conn);
+};
+ok( $returned eq '1', 'match good conn check') or diag('match failed on a connection that should match');
+
+done_testing(6);

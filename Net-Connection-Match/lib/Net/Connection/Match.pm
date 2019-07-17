@@ -27,6 +27,33 @@ our $VERSION = '0.0.0';
 
 =head2 new
 
+This initializes a new check object.
+
+It takes one value and thht is a hash ref with the key checks.
+This is a array of hashes.
+
+=head3 checks hash keys
+
+=head4 type
+
+This is the name of the check relative to 'Net::Connection::Match::'.
+
+So 'Net::Connection::Match::PTR' would become 'PTR'.
+
+=head4 args
+
+This is a hash or args to pash to the check. These are passed to the new
+method of the check module.
+
+=head4 invert
+
+This is either boolean on if the check should be inverted or not.
+
+    my $mce;
+    eval{
+        $ncm=Net::Connection::Match->new( $args );
+    };
+
 =cut
 
 sub new{
@@ -41,14 +68,14 @@ sub new{
 	if ( ! defined( $args{checks} )	){
 		die ('No check key specified in the argument hash');
 	}
-	if ( ref( $args{checks} ) eq 'ARRAY' ){
+	if ( ref( @{ $args{checks} } ) eq 'ARRAY' ){
 		die ('The checks key is not a array');
 	}
 	# Will never match anything.
 	if ( ! defined $args{checks}[0] ){
 		die ('Nothing in the checks array');
 	}
-	if ( ref( $args{checks}[0] ) eq 'HASH' ){
+	if ( ref( %{ $args{checks}[0] } ) eq 'HASH' ){
 		die ('The first item in the checks array is not a hash');
 	}
 
@@ -56,6 +83,7 @@ sub new{
 				perror=>undef,
 				error=>undef,
 				errorString=>"",
+				testing=>0,
 				errorExtra=>{
 							 flags=>{
 									 1=>'failedCheckInit',
@@ -122,11 +150,7 @@ sub new{
 		eval( $eval_string );
 
 		if (!defined( $check )){
-			$self->{error}=1;
-			$self->{errorString}='Failed to init the check for '.$check_int.' as it returned undef... '.$@;
-			$self->warn;
-			$self->{perror}=1;
-			return $self;
+			die 'Failed to init the check for '.$check_int.' as it returned undef... '.$@;
 		}
 
 		$new_check{check}=$check;
@@ -136,16 +160,20 @@ sub new{
 		$check_int++;
 	}
 
+	if ( $args{testing} ){
+		$self->{testing}=1;
+	}
+
 	return $self;
 }
 
-=head2 matches
+=head2 match
 
 Checks if a single Net::Connection object matches the stack.
 
 =cut
 
-sub matches{
+sub match{
 	my $self=$_[0];
 	my $conn=$_[1];
 
@@ -159,7 +187,9 @@ sub matches{
 		){
 		$self->{error}=2;
 		$self->{errorString}='Either the connection is undefined or is not a Net::Connection object';
-		$self->warn;
+		if ( ! $self->{testing} ){
+			$self->warn;
+		}
 		return undef;
 	}
 
@@ -197,6 +227,19 @@ sub matches{
 	# If we get here, it is not a match
 	return 0;
 }
+
+=head1 ERROR HANDLING / FLAGS
+
+Error handling is provided by L<Error::Helper>.
+
+=head2 1 / failedCheckInit
+
+Calling new for one or more of the checks failed.
+
+=head2 2 / notNCobj
+
+Not a Net::Connection object. Either is is not defined
+or what is being passed is not a Net::Connection object.
 
 =head1 AUTHOR
 

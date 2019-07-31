@@ -10,11 +10,11 @@ Net::Connection::Match::Ports - Runs a basic port check against a Net::Connectio
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.1.0';
 
 
 =head1 SYNOPSIS
@@ -130,6 +130,8 @@ sub new{
 		while (defined( $args{ports}[$ports_int] )) {
 			if ( $args{ports}[$ports_int] =~ /^[0-9]+$/ ){
 				$self->{ports}{ $args{ports}[$ports_int] }= $args{ports}[$ports_int];
+			}elsif( $args{ports}[$ports_int] =~ /^\*$/  ){
+				$self->{ports}{'*'}='*';
 			}else{
 				my $port_number=(getservbyname( $args{ports}[$ports_int] , '' ))[2];
 
@@ -150,6 +152,8 @@ sub new{
 		while (defined( $args{lports}[$ports_int] )) {
 			if ( $args{lports}[$ports_int] =~ /^[0-9]+$/ ){
 				$self->{lports}{ $args{lports}[$ports_int] }= $args{lports}[$ports_int];
+			}elsif( $args{lports}[$ports_int] =~ /^\*$/  ){
+				$self->{lports}{'*'}='*';
 			}else{
 				my $port_number=(getservbyname( $args{lports}[$ports_int] , '' ))[2];
 
@@ -170,6 +174,8 @@ sub new{
 		while (defined( $args{fports}[$ports_int] )) {
 			if ( $args{fports}[$ports_int] =~ /^[0-9]+$/ ){
 				$self->{fports}{ $args{fports}[$ports_int] }= $args{fports}[$ports_int];
+			}elsif( $args{fports}[$ports_int] =~ /^\*$/  ){
+				$self->{fports}{'*'}='*';
 			}else{
 				my $port_number=(getservbyname( $args{fports}[$ports_int] , '' ))[2];
 

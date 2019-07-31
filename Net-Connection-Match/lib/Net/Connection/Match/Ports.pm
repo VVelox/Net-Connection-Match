@@ -43,6 +43,7 @@ our $VERSION = '0.1.0';
                        ],
               fports=>[
                        'http',
+                       '*',
                        ],
               );
     
@@ -63,7 +64,7 @@ possible keys defined. The possible keys are 'ports'(which
 matches either side), 'lports'(which matches the local side),
 and 'fports'(which matches the foreign side).
 
-The value of each key is a array with either port numbers or
+The value of each key is a array with either port numbers, '*', or
 names. If names are given, getservbyname will be called. If
 it errors for any of them, it will die.
 

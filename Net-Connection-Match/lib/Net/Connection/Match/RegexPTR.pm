@@ -42,13 +42,13 @@ our $VERSION = '0.0.0';
     # Atleast one of them must be and must not be a empty array.
     my %args=(
               ptrs=>[
-                     'foo.bar',
+                     'foo',
                       ],
               lptrs=>[
-                      'a.foo.bar',
+                      'bar',
                        ],
               fptrs=>[
-                      'b.foo.bar',
+                      'f[oa]o',
                        ],
               );
     
@@ -141,10 +141,10 @@ sub new{
 		$self->{ptrs}=$args{ptrs};
 	}
 	if ( defined( $args{lptrs}[0] ) ){
-		$self->{lptrs}=\@{ $args{lptrs} };
+		$self->{lptrs}=$args{lptrs};
 	}
 	if ( defined( $args{fptrs}[0] ) ){
-		$self->{fptrs}=\@{ $args{fptrs} };
+		$self->{fptrs}=$args{fptrs};
 	}
 
 	return $self;

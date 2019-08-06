@@ -1,4 +1,4 @@
-package Net::Connection::Match::PTR;
+package Net::Connection::Match::RegexPTR;
 
 use 5.006;
 use strict;
@@ -7,7 +7,7 @@ use Net::DNS;
 
 =head1 NAME
 
-Net::Connection::Match::PTR - Runs a PTR check against a Net::Connection object.
+Net::Connection::Match::RegexPTR - Runs a PTR check against a Net::Connection object using regular expressions.
 
 =head1 VERSION
 
@@ -20,7 +20,7 @@ our $VERSION = '0.0.0';
 
 =head1 SYNOPSIS
 
-    use Net::Connection::Match::PTR;
+    use Net::Connection::Match::RegexPTR;
     use Net::Connection;
     
     # The *_ptr feilds do not need populated.
@@ -52,7 +52,7 @@ our $VERSION = '0.0.0';
                        ],
               );
     
-    my $checker=Net::Connection::Match::Ports->new( \%args );
+    my $checker=Net::Connection::Match::RegexPTR->new( \%args );
     
     if ( $checker->match( $conn ) ){
         print "It matches.\n";
@@ -76,23 +76,23 @@ This intiates the object.
                        ],
               );
     
-    my $checker=Net::Connection::Match::Ports->new( \%args );
+    my $checker=Net::Connection::Match::RegexPTR->new( \%args );
 
 
 =head3 args
 
 Atleast one of the following need used.
 
-=keys ptrs
+=head4 ptrs
 
 This is a array of PTRs to match in for either foreign
 or local side.
 
-=keys fptrs
+=head4 fptrs
 
 This is a array of PTRs to match in for the foreign side.
 
-=keys lptrs
+=head4 lptrs
 
 This is a array of PTRs to match in for the local side.
 
@@ -130,45 +130,21 @@ sub new{
 	}
 
     my $self = {
-				ptrs=>{},
-				fptrs=>{},
-				lptrs=>{},
+				ptrs=>[],
+				lptrs=>[],
+				fptrs=>[],
 				resolver=>Net::DNS::Resolver->new,
 				};
     bless $self;
 
-	##
-	## These are all stored as lower case to make matching easier.
-	##
-
-	# Process the ports for matching either
-	my $ptrs_int=0;
-	if ( defined( $args{ptrs} ) ){
-		while (defined( $args{ptrs}[$ptrs_int] )) {
-			$self->{ptrs}{ $args{ptrs}[$ptrs_int] }=lc( $args{ptrs}[$ptrs_int] );
-
-			$ptrs_int++;
-		}
+	if ( defined( $args{ptrs}[0] ) ){
+		$self->{ptrs}=$args{ptrs};
 	}
-
-	# Process the ports for matching local ports
-	$ptrs_int=0;
-	if ( defined( $args{lptrs} ) ){
-		while (defined( $args{lptrs}[$ptrs_int] )) {
-			$self->{lptrs}{ $args{lptrs}[$ptrs_int] }=lc( $args{lptrs}[$ptrs_int] );
-
-			$ptrs_int++;
-		}
+	if ( defined( $args{lptrs}[0] ) ){
+		$self->{lptrs}=$args{lptrs};
 	}
-
-	# Process the ports for matching foreign ports
-	$ptrs_int=0;
-	if ( defined( $args{fptrs} ) ){
-		while (defined( $args{fptrs}[$ptrs_int] )) {
-			$self->{fptrs}{ $args{fptrs}[$ptrs_int] }=lc( $args{fptrs}[$ptrs_int] );
-
-			$ptrs_int++;
-		}
+	if ( defined( $args{fptrs}[0] ) ){
+		$self->{fptrs}=$args{fptrs};
 	}
 
 	return $self;
@@ -236,14 +212,23 @@ sub match{
 		}
 	}
 
-	# If we matched exactly, we found it.
-	if (
-		defined( $self->{ptrs}{ $l_ptr } ) ||
-		defined( $self->{ptrs}{ $f_ptr } ) ||
-		defined( $self->{lptrs}{ $l_ptr } ) ||
-		defined( $self->{fptrs}{ $f_ptr } )
-		){
-		return 1;
+	foreach my $regex ( @{ $self->{ptrs} } ){
+		if ( $l_ptr =~ /$regex/ ){
+			return 1;
+		}
+		if ( $f_ptr =~ /$regex/ ){
+			return 1;
+		}
+	}
+	foreach my $regex ( @{ $self->{lptrs} } ){
+		if ( $l_ptr =~ /$regex/ ){
+			return 1;
+		}
+	}
+	foreach my $regex ( @{ $self->{fptrs} } ){
+		if ( $f_ptr =~ /$regex/ ){
+			return 1;
+		}
 	}
 
 	return 0;

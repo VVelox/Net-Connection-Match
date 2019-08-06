@@ -1,4 +1,4 @@
-package Net::Connection::Match::Protos;
+package Net::Connection::Match::UID;
 
 use 5.006;
 use strict;
@@ -6,7 +6,7 @@ use warnings;
 
 =head1 NAME
 
-Net::Connection::Match::Protos - Runs a protocol check against a Net::Connection object.
+Net::Connection::Match::UID - Check if the UID of a connection matches.
 
 =head1 VERSION
 
@@ -19,7 +19,7 @@ our $VERSION = '0.0.0';
 
 =head1 SYNOPSIS
 
-    use Net::Connection::Match::Protos;
+    use Net::Connection::Match::UID;
     use Net::Connection;
     
     my $connection_args={
@@ -29,18 +29,20 @@ our $VERSION = '0.0.0';
                          local_port=>'12322',
                          proto=>'tcp4',
                          state=>'ESTABLISHED',
+                         uid=>0,
+                         username=>'root',
                         };
     
     my $conn=Net::Connection->new( $connection_args );
     
     my %args=(
-              protos=>[
-                      'tcp4',
-                      'tcp6',
-                      ],
+              uids=>[
+                     0,
+                     '>1000',
+                    ],
               );
     
-    my $checker=Net::Connection::Match::Protos->new( \%args );
+    my $checker=Net::Connection::Match::UID->new( \%args );
     
     if ( $checker->match( $conn ) ){
         print "It matches.\n";
@@ -53,19 +55,28 @@ our $VERSION = '0.0.0';
 This intiates the object.
 
 It takes a hash reference with one key. One key is required and
-that is 'protos', which is a array of protocols to match against.
+that is 'uids', which is a array of UIDs to match.
 
-Atleast one protocol must be present.
+The UID values can be prefixed with the equalities below for doing
+additional comparisons.
+
+    <
+    <=
+    >
+    >=
+
+Atleast one UID must be specified.
 
 If the new method fails, it dies.
 
     my %args=(
-              protos=>[
-                      'tcp4',
-                      ],
+              uids=>[
+                     0,
+                     '>1000',
+                    ],
               );
     
-    my $checker=Net::Connection::Match::Protos->new( \%args );
+    my $checker=Net::Connection::Match::UID->new( \%args );
 
 =cut
 
@@ -76,28 +87,20 @@ sub new{
 	};
 
 	# run some basic checks to make sure we have the minimum stuff required to work
-	if ( ! defined( $args{protos} ) ){
-		die ('No protos key specified in the argument hash');
+	if ( ! defined( $args{uids} ) ){
+		die ('No uids key specified in the argument hash');
 	}
-	if ( ref( \$args{protos} ) eq 'ARRAY' ){
-		die ('The protos key is not a array');
+	if ( ref( \$args{uids} ) eq 'ARRAY' ){
+		die ('The uids key is not a array');
 	}
-	if ( ! defined $args{protos}[0] ){
-		die ('No states defined in the protos array');
+	if ( ! defined $args{uids}[0] ){
+		die ('Nothing defined in the uids array');
 	}
 
     my $self = {
-				protos=>[],
+				uids=>$args{uids},
 				};
     bless $self;
-
-	# lc everything for easier matching later
-	my $protos_int=0;
-	while( defined( $args{protos}[$protos_int] ) ){
-		$self->{protos}[$protos_int]=lc( $args{protos}[$protos_int] );
-
-		$protos_int++;
-	}
 
 	return $self;
 }
@@ -128,13 +131,41 @@ sub match{
 		return 0;
 	}
 
-	my $protos_int=0;
-	while( defined( $self->{protos}[$protos_int] ) ){
-		if ( $self->{protos}[$protos_int] eq lc( $object->proto ) ){
-			return 1;
-		}
+	my $conn_uid=$object->uid;
 
-		$protos_int++;
+	# don't bother proceeding, the object won't match ever
+	# as it does not have a UID
+	if ( ! defined( $conn_uid ) ){
+		return 0;
+	}
+
+	foreach my $uid ( @{ $self->{uids} } ){
+		if (
+			( $uid =~ /^[0-9]+$/ ) &&
+			( $uid eq $conn_uid )
+			){
+			return 1;
+		}elsif( $uid =~ /^\<\=[0-9]+$/ ){
+			$uid=~s/^\<\=//;
+			if ( $uid <= $conn_uid ){
+				return 1;
+			}
+		}elsif( $uid =~ /^\<[0-9]+$/ ){
+			$uid=~s/^\<//;
+			if ( $uid < $conn_uid ){
+				return 1;
+			}
+		}elsif( $uid =~ /^\>\=[0-9]+$/ ){
+			$uid=~s/^\>\=//;
+			if ( $uid >= $conn_uid ){
+				return 1;
+			}
+		}elsif( $uid =~ /^\>[0-9]+$/ ){
+			$uid=~s/^\>//;
+			if ( $uid > $conn_uid ){
+				return 1;
+			}
+		}
 	}
 
 	return 0;

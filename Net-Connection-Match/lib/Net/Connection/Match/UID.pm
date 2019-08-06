@@ -139,7 +139,10 @@ sub match{
 		return 0;
 	}
 
-	foreach my $uid ( @{ $self->{uids} } ){
+	# use while as foreach will reference the value
+	my $uid_int=0;
+	while (defined( $self->{uids}[$uid_int] )){
+		my $uid=$self->{uids}[$uid_int];
 		if (
 			( $uid =~ /^[0-9]+$/ ) &&
 			( $uid eq $conn_uid )
@@ -166,6 +169,7 @@ sub match{
 				return 1;
 			}
 		}
+		$uid_int++;
 	}
 
 	return 0;

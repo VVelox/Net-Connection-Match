@@ -147,22 +147,22 @@ sub match{
 			return 1;
 		}elsif( $uid =~ /^\<\=[0-9]+$/ ){
 			$uid=~s/^\<\=//;
-			if ( $uid <= $conn_uid ){
+			if ( $conn_uid <= $uid ){
 				return 1;
 			}
 		}elsif( $uid =~ /^\<[0-9]+$/ ){
 			$uid=~s/^\<//;
-			if ( $uid < $conn_uid ){
+			if ( $conn_uid < $uid ){
 				return 1;
 			}
 		}elsif( $uid =~ /^\>\=[0-9]+$/ ){
 			$uid=~s/^\>\=//;
-			if ( $uid >= $conn_uid ){
+			if ( $conn_uid >= $uid ){
 				return 1;
 			}
 		}elsif( $uid =~ /^\>[0-9]+$/ ){
 			$uid=~s/^\>//;
-			if ( $uid > $conn_uid ){
+			if ( $conn_uid > $uid ){
 				return 1;
 			}
 		}

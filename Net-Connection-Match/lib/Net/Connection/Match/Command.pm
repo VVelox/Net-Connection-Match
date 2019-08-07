@@ -131,19 +131,20 @@ sub match{
 
 	# go through each proc and look for a matching pid
 	my $proctable=Proc::ProcessTable->new;
-	my @procs=$proctable->table;
+	my $procs=$proctable->table;
 	my $loop=1;
 	my $proc_int=0;
 	my $command;
 	while (
 		   $loop &&
-		   defined( $procs[$proc_int] )
+		   defined( $procs->[$proc_int] )
 		   ){
-		if ( $conn_pid eq $procs[$proc_int]->pid ){
-			my $command=$procs[$proc_int]->cmndline;
+
+		if ( $conn_pid eq $procs->[$proc_int]->{pid} ){
+			$command=$procs->[$proc_int]->cmndline;
 			# '' means it is a kernel process
 			if ( $command =~ /^$/ ){
-				$command='['.$procs[$proc_int]->fname.']';
+				$command='['.$procs->[$proc_int]->fname.']';
 			}
 			# exit the loop as we found it
 			$loop=0;

@@ -7,7 +7,7 @@ use Proc::ProcessTable;
 
 =head1 NAME
 
-Net::Connection::Match::Command - Check if the process command PID matches fix regexp for a Net::Connection object.
+Net::Connection::Match::Command - Check if the process command matches fix regexp for a Net::Connection object.
 
 =head1 VERSION
 

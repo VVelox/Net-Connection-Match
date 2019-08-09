@@ -1,6 +1,7 @@
 Changes
 lib/Net/Connection/Match.pm
 lib/Net/Connection/Match/CIDR.pm
+lib/Net/Connection/Match/Command.pm
 lib/Net/Connection/Match/Ports.pm
 lib/Net/Connection/Match/Protos.pm
 lib/Net/Connection/Match/PTR.pm

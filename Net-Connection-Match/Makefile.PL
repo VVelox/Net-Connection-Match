@@ -22,6 +22,7 @@ WriteMakefile(
 							'Net::Connection'=>'0.0.0',
 							'Net::DNS'=>'1.20',
 							'Proc::ProcessTable' => '0.59',
+							'Error::Helper' => '1.0.0',
 							},
 			  dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 			  clean => { FILES => 'Net-Connection-Match-*' },

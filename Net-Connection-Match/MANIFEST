@@ -2,6 +2,7 @@ Changes
 lib/Net/Connection/Match.pm
 lib/Net/Connection/Match/CIDR.pm
 lib/Net/Connection/Match/Command.pm
+lib/Net/Connection/Match/PctCPU.pm
 lib/Net/Connection/Match/Ports.pm
 lib/Net/Connection/Match/Protos.pm
 lib/Net/Connection/Match/PTR.pm
@@ -24,6 +25,7 @@ t/08-load.t
 t/09-load.t
 t/10-load.t
 t/11-load.t
+t/12-load.t
 t/CIDR.t
 t/PTR.t
 t/Protos.t

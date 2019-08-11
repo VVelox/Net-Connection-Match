@@ -1,4 +1,4 @@
-package Net::Connection::Match::Command;
+package Net::Connection::Match::WChan;
 
 use 5.006;
 use strict;
@@ -7,20 +7,20 @@ use Proc::ProcessTable;
 
 =head1 NAME
 
-Net::Connection::Match::Command - Check if the process command matches fix regexp for a Net::Connection object.
+Net::Connection::Match::WChan - Check if the process wait channel matches fix regexp for a Net::Connection object.
 
 =head1 VERSION
 
-Version 0.1.0
+Version 0.0.0
 
 =cut
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.0.0';
 
 
 =head1 SYNOPSIS
 
-    use Net::Connection::Match::Command;
+    use Net::Connection::Match::WChan;
     use Net::Connection;
     
     my $connection_args={
@@ -31,17 +31,19 @@ our $VERSION = '0.1.0';
                          proto=>'tcp4',
                          state=>'ESTABLISHED',
                          pid=>0,
+                         wchan=>'sigwait',
                         };
     
     my $conn=Net::Connection->new( $connection_args );
     
     my %args=(
-              commands=>[
-                         'kernel',
-                         ],
+              wchanss=>[
+                        'sleep',
+                        'sigwait',
+                        ],
               );
     
-    my $checker=Net::Connection::Match::Command->new( \%args );
+    my $checker=Net::Connection::Match::WChan->new( \%args );
     
     if ( $checker->match( $conn ) ){
         print "It matches.\n";
@@ -55,18 +57,17 @@ This intiates the object.
 
 The key in the hash ref commands is a array
 that holds regular expressions to match against
-the command line or fname(in case of blank command
-line). At least one value must be defined.
+the wait channel.
 
 If the new method fails, it dies.
 
     my %args=(
-              commands=>[
-                         'kernel',
-                         ],
+              wchans=>[
+                      'kernel',
+                      ],
               );
     
-    my $checker=Net::Connection::Match::Command->new( \%args );
+    my $checker=Net::Connection::Match::WChan->new( \%args );
 
 =cut
 
@@ -77,18 +78,18 @@ sub new{
 	};
 
 	# run some basic checks to make sure we have the minimum stuff required to work
-	if ( ! defined( $args{commands} ) ){
-		die ('No commands key specified in the argument hash');
+	if ( ! defined( $args{wchans} ) ){
+		die ('No wchans key specified in the argument hash');
 	}
-	if ( ref( \$args{commands} ) eq 'ARRAY' ){
-		die ('The commands key is not a array');
+	if ( ref( \$args{wchans} ) eq 'ARRAY' ){
+		die ('The wchans key is not a array');
 	}
-	if ( ! defined $args{commands}[0] ){
+	if ( ! defined $args{wchans}[0] ){
 		die ('Nothing defined in the commands array');
 	}
 
     my $self = {
-				commands=>$args{commands},
+				wchans=>$args{wchans},
 				};
     bless $self;
 
@@ -131,7 +132,7 @@ sub match{
 
 
 	my $loop=0;
-	my $command;
+	my $wchan;
 	if ( ! defined( $object->proc ) ){
 		# go through each proc and look for a matching pid
 		my $proctable=Proc::ProcessTable->new;
@@ -144,11 +145,8 @@ sub match{
 			   ){
 
 			if ( $conn_pid eq $procs->[$proc_int]->{pid} ){
-				$command=$procs->[$proc_int]->cmndline;
-				# '' means it is a kernel process
-				if ( $command =~ /^$/ ){
-					$command='['.$procs->[$proc_int]->fname.']';
-				}
+				$wchan=$procs->[$proc_int]->wchan;
+
 				# exit the loop as we found it
 				$loop=0;
 			}
@@ -156,19 +154,19 @@ sub match{
 		$proc_int++;
 		}
 	}else{
-		$command=$object->proc;
+		$wchan=$object->wchan;
 	}
 
 	# likely a dead connection that is handing around...
 	# or disappeared since grabbing the connection list
 	# and starting processing
-	if ( !defined( $command ) ){
+	if ( !defined( $wchan ) ){
 		return 0;
 	}
 
 	# check each command regex and see if any of them match
-	foreach my $regex ( @{ $self->{commands} } ){
-		if ( $command =~ /$regex/ ){
+	foreach my $regex ( @{ $self->{wchans} } ){
+		if ( $wchan =~ /$regex/ ){
 			return 1;
 		}
 	}

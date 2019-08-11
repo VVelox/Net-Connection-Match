@@ -87,18 +87,18 @@ sub new{
 	};
 
 	# run some basic checks to make sure we have the minimum stuff required to work
-	if ( ! defined( $args{wchans} ) ){
-		die ('No wchans key specified in the argument hash');
+	if ( ! defined( $args{pctcpus} ) ){
+		die ('No pctcpus key specified in the argument hash');
 	}
-	if ( ref( \$args{wchans} ) eq 'ARRAY' ){
-		die ('The wchans key is not a array');
+	if ( ref( \$args{pctcpus} ) eq 'ARRAY' ){
+		die ('The pctcpus key is not a array');
 	}
-	if ( ! defined $args{wchans}[0] ){
-		die ('Nothing defined in the commands array');
+	if ( ! defined $args{pctcpus}[0] ){
+		die ('Nothing defined in the pctcpus array');
 	}
 
     my $self = {
-				wchans=>$args{wchans},
+				pctcpus=>$args{pctcpus},
 				};
     bless $self;
 
@@ -178,26 +178,26 @@ sub match{
 	while (defined( $self->{pctcpus}[$pctcpu_int] )){
 		my $value=$self->{pctcpus}[$pctcpu_int];
 		if (
-			( $value =~ /^[0-9]+$/ ) &&
+			( $value =~ /^[0-9.]+$/ ) &&
 			( $value eq $pctcpu )
 			){
 			return 1;
-		}elsif( $value =~ /^\<\=[0-9]+$/ ){
+		}elsif( $value =~ /^\<\=[0-9.]+$/ ){
 			$value=~s/^\<\=//;
 			if ( $value <= $pctcpu ){
 				return 1;
 			}
-		}elsif( $value =~ /^\<[0-9]+$/ ){
+		}elsif( $value =~ /^\<[0-9.]+$/ ){
 			$value=~s/^\<//;
 			if ( $pctcpu < $value ){
 				return 1;
 			}
-		}elsif( $value =~ /^\>\=[0-9]+$/ ){
+		}elsif( $value =~ /^\>\=[0-9.]+$/ ){
 			$value=~s/^\>\=//;
 			if ( $pctcpu >= $value ){
 				return 1;
 			}
-		}elsif( $value =~ /^\>[0-9]+$/ ){
+		}elsif( $value =~ /^\>[0-9.]+$/ ){
 			$value=~s/^\>//;
 			if ( $pctcpu > $value ){
 				return 1;

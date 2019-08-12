@@ -19,7 +19,7 @@ WriteMakefile(
 								 },
 			  PREREQ_PM => {
 							'Net::CIDR'=>'0.20',
-							'Net::Connection'=>'0.0.0',
+							'Net::Connection'=>'0.2.0',
 							'Net::DNS'=>'1.20',
 							'Proc::ProcessTable' => '0.59',
 							'Error::Helper' => '1.0.0',

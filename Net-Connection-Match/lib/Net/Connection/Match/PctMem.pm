@@ -92,7 +92,7 @@ sub new{
 	if ( ref( \$args{pctmems} ) eq 'ARRAY' ){
 		die ('The pctmems key is not a array');
 	}
-	if ( ! defined $args{pctcpus}[0] ){
+	if ( ! defined $args{pctmems}[0] ){
 		die ('Nothing defined in the pctmems array');
 	}
 

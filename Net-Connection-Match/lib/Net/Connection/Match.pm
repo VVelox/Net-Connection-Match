@@ -123,7 +123,12 @@ sub new{
 	}
 	# Will never match anything.
 	if ( ! defined $args{checks}[0] ){
-		die ('Nothing in the checks array');
+		$args{checks}[0] = {
+			type   => 'All',
+			invert => 0,
+			args   => {}
+		};
+
 	}
 	if ( ref( %{ $args{checks}[0] } ) eq 'HASH' ){
 		die ('The first item in the checks array is not a hash');
@@ -143,9 +148,6 @@ sub new{
 				checks=>[],
 				};
     bless $self;
-
-	# will hold the created check objects
-	my @checks;
 
 	# Loads up each check or dies if it fails to.
 	my $check_int=0;

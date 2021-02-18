@@ -78,7 +78,8 @@ our $VERSION = '0.5.0';
 This initializes a new check object.
 
 It takes one value and thht is a hash ref with the key checks.
-This is a array of hashes.
+This is a array of hashes. If the array is empty, it will default
+to using the All test.
 
 If new fails, it will die.
 
